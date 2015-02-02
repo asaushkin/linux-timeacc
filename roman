@@ -1,0 +1,31 @@
+#!/bin/bash
+
+PASS=$(apg -m 8 -n 1 -MNC -E 'O03')
+USERNAME=roman
+FILE=/home/ags/projects/linux-timeacc/${USERNAME}.limit
+LIMIT=${1-30}
+
+if [[ ! $LIMIT =~ ^-?[0-9]+$ ]]; then
+    echo Set time limit to 5 minutes
+    LIMIT=5
+fi
+
+SEC_LIMIT=$(date --date="$(($LIMIT*60)) seconds" +%Y%m%d%H%M.%S)
+
+if [[ -z $USERNAME ]]; then
+    echo Введите имя пользователя которому необходимо изменить пароль.
+    exit 1
+fi
+
+id $USERNAME &>/dev/null
+
+if [[ $? -ne 0 ]]; then
+    echo Пользователя $USERNAME не существует.
+    exit 1
+fi
+
+echo "${USERNAME}:${PASS}" | chpasswd -c MD5
+touch -t $SEC_LIMIT $FILE
+echo $PASS
+
+
